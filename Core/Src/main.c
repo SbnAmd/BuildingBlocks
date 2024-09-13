@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -32,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define ARRAY_SIZE      (16*1024)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,7 +55,9 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t src_arr[ARRAY_SIZE] = {0};
+uint32_t dst_arr[ARRAY_SIZE] = {0};
+HAL_StatusTypeDef stat;
 /* USER CODE END 0 */
 
 /**
@@ -86,14 +89,27 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   /* USER CODE BEGIN 2 */
 
+  /*** Init src array ***/
+  for(long i = 0; i < ARRAY_SIZE; i++)
+      src_arr[i] = (int)i;
+
+  /*** This is almost a memcpy() function ***/
+  stat = HAL_DMA_Start (&hdma_memtomem_dma2_stream0, (uint32_t)src_arr, (uint32_t)dst_arr, ARRAY_SIZE);
+
+  if(stat == HAL_OK)
+      HAL_GPIO_TogglePin(GPIOG, LD3_Pin);
+  else
+      HAL_GPIO_TogglePin(GPIOG, LD4_Pin);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+      HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
